@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Range Slider</title>
+    <!--Google Fonts-->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <script src="jquery/dist/jquery.min.js"></script>
+
+    <!--Stylesheet-->
+    <style>
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: -ms-grid;
+            display: grid;
+            background-color: #000000;
+            place-items: center;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 95vmin;
+            background-color: #ffffff;
+            padding: 50px 40px 20px 40px;
+            border-radius: 10px;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            margin-top: 30px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            outline: none;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            bottom: 0;
+            background-color: transparent;
+            pointer-events: none;
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 60px;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            bottom: 0;
+            border-radius: 5px;
+            background: rgba(12, 189, 210, 0.5);
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            -webkit-appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-moz-range-track {
+            -moz-appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-ms-track {
+            appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 60px;
+            width: 4px;
+            background-color: #3264fe;
+            margin-top: -9px;
+            pointer-events: auto;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            -webkit-appearance: none;
+            height: 60px;
+            width: 4px;
+            cursor: pointer;
+            background-color: #3264fe;
+            pointer-events: auto;
+        }
+
+        input[type="range"]::-ms-thumb {
+            appearance: none;
+            height: 60px;
+            width: 4px;
+            cursor: pointer;
+            background-color: #3264fe;
+            pointer-events: auto;
+        }
+
+        input[type="range"]:active::-webkit-slider-thumb {
+            background-color: #ffffff;
+            border: 3px solid #3264fe;
+        }
+
+        .fill {
+            position: absolute;
+            background: red;
+            top: 0;
+            bottom: 0;
+            width: 10%;
+            height: 60px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="values">
+            <span id="range1">
+                0
+            </span>
+        <span> &dash; </span>
+        <span id="range2">
+                100
+            </span>
+    </div>
+    <div class="container">
+        <div class="slider-track">
+            <div class="fill"></div>
+        </div>
+        <input type="range" min="0" max="100" value="30" id="slider-1" oninput="slideOne()">
+        <input type="range" min="0" max="100" value="70" id="slider-2" oninput="slideTwo()">
+    </div>
+</div>
+
+<!--Script-->
+<script>
+    window.onload = function () {
+        slideOne();
+        slideTwo();
+    }
+
+    let sliderOne = document.getElementById("slider-1");
+    let sliderTwo = document.getElementById("slider-2");
+    let displayValOne = document.getElementById("range1");
+    let displayValTwo = document.getElementById("range2");
+    let minGap = 1.5;
+    let sliderMaxValue = document.getElementById("slider-1").max;
+    let fill = document.getElementsByClassName('fill')[0];
+    let diff;
+    function slideOne() {
+        if (parseInt(sliderTwo.value) - parseInt(sliderOne.value) <= minGap) {
+            sliderOne.value = parseInt(sliderTwo.value) - minGap;
+        }
+        fill.style.left = sliderOne.value + "%";
+        displayValOne.textContent = sliderOne.value;
+        fillColor(sliderOne.value, sliderTwo.value);
+    }
+
+    function slideTwo() {
+        if (parseInt(sliderTwo.value) - parseInt(sliderOne.value) <= minGap) {
+            sliderTwo.value = parseInt(sliderOne.value) + minGap;
+        }
+        if(sliderTwo.value <= 100){
+            fill.style.removeProperty('right');
+            fill.style.left = sliderOne.value + "%";
+        }
+        displayValTwo.textContent = sliderTwo.value;
+        fillColor(sliderOne.value, sliderTwo.value);
+    }
+
+    function fillColor(val1, val2, dragState = false) {
+
+        let percent1 = (val1 / sliderMaxValue) * 100;
+        let percent2 = (val2 / sliderMaxValue) * 100;
+        diff = percent2 - percent1;
+        if (!dragState) {
+            fill.style.width = diff + "%";
+        } else {
+            if(Math.floor(val2) >= 100){
+                sliderOne.value = 100 - diff;
+                fill.style.removeProperty('left');
+                fill.style.right = 0;
+            }else{
+                fill.style.left = val1 + "%";
+            }
+        }
+    }
+
+    $(function () {
+        $('.fill').on({
+            mousedown: function () {
+                // console.log('down');
+                $('.slider-track').mousemove(function (e) {
+                    // console.log('move');
+                    let position = e.pageX - $(this).offset().left,
+                        totalWidth = parseFloat($('.slider-track').css('width').split('px')[0]),
+                        val1 = (100 * position) / parseFloat($('.slider-track').css('width').split('px')[0]),
+                        val2 = val1 + diff;
+                    sliderOne.value = val1;
+                    sliderTwo.value = val2;
+                    fillColor(val1, val2,true);
+                });
+            },
+            mouseup: function () {
+                $('.slider-track').off('mousemove');
+            }
+        });
+        $('.container').on({
+            mouseup: function () {
+                $('.slider-track').off('mousemove');
+            },
+            mouseleave: function () {
+                $('.slider-track').off('mousemove');
+            }
+        });
+    })
+
+</script>
+</body>
+</html>
